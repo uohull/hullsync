@@ -22,7 +22,5 @@ code = STDIN.gets.chomp.split('=').last
 
 tokens = Boxr::get_tokens(code)
 puts tokens
-puts tokens.access_token
-puts tokens.refresh_token
 File.write('.box_access_token', tokens.access_token)
 File.write('.box_refresh_token', tokens.refresh_token)
