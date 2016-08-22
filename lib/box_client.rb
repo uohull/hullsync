@@ -41,7 +41,6 @@ class BoxClient
   end
 
   def rename_folder(folder, original_name, status='processing')
-    @client.folder_from_id(id)
     new_name = "#{original_name}_#{folder.created_by.name}_#{status}"
     @client.update_folder(folder, name: new_name)
   end
