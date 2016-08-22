@@ -3,9 +3,10 @@ class WatchProcessorJob
   @queue = :watcher
 
   def self.perform(message)
+    puts 'SELECTED WATCH PROCESSING'
     puts message
     if message['event_type'] == 'added_collaborator'
-      puts 'PRE-PROCESSING'
+      puts 'SELECTED WATCH PROCESSING'
       # if event is 'added collaborator' act on it
       box_client = BoxClient.new
       # Get folder metadata

@@ -19,7 +19,6 @@ class BoxClient
     token_refresh_callback = lambda {|access, refresh, _identifier| save_tokens(access, refresh)}
     @access_token = File.read(ENV['BOX_ACCESS_TOKEN_FILE'])
     @refresh_token = File.read(ENV['BOX_REFRESH_TOKEN_FILE'])
-    puts @access_token, @refresh_token
     # @client = Boxr::Client.new(@access_token, refresh_token: @refresh_token, client_id: ENV['BOX_CLIENT_ID'], client_secret: ENV['BOX_CLIENT_SECRET'], &token_refresh_callback)
     @client = Boxr::Client.new(@access_token, refresh_token: @refresh_token, &token_refresh_callback)
   end
