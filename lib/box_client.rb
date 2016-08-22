@@ -1,9 +1,8 @@
 require 'boxr'
 
-# ENV file should be filled. Read box_env.md
-
 
 class BoxClient
+  # ENV file should be filled. Read box_env.md
 
   def initialize
     self.access_token = ''
@@ -20,7 +19,8 @@ class BoxClient
     token_refresh_callback = lambda {|access, refresh, identifier| save_tokens(access, refresh)}
     self.access_token = File.read('.box_access_token')
     self.refresh_token = File.read('.box_refresh_token')
-    self.client = Boxr::Client.new(self.access_token, refresh_token: self.refresh_token, client_id: ENV['BOX_CLIENT_ID'], client_secret: ENV['BOX_CLIENT_SECRET'], &token_refresh_callback)
+    # self.client = Boxr::Client.new(self.access_token, refresh_token: self.refresh_token, client_id: ENV['BOX_CLIENT_ID'], client_secret: ENV['BOX_CLIENT_SECRET'], &token_refresh_callback)
+    self.client = Boxr::Client.new(self.access_token, refresh_token: self.refresh_token, &token_refresh_callback)
   end
 
   def jwt_enterprise_init
@@ -33,8 +33,7 @@ class BoxClient
 
   def folder_contents(path=nil)
     unless path
-      self.client.+-
-
+      self.client.folder_items(Boxr::ROOT)
     else
       self.client.folder_items(path)
     end
