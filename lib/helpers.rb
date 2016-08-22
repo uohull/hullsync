@@ -16,6 +16,6 @@ def copy_folder(source, destination)
   true
 end
 
-def create_metadata_files
+def create_bagit_metadata_files
   # TODO
 end
