@@ -10,6 +10,7 @@ gem 'dotenv-rails', :groups => [:development, :test]
 # Use boxr to connect and interact with box api
 gem 'boxr'
 # To run asynchronous tasks
+gem 'redis'
 gem 'resque'
 # Build JSON APIs with ease. Read more: https://github.com/rails/jbuilder
 # gem 'jbuilder', '~> 2.5'
