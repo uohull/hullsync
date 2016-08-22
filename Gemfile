@@ -9,6 +9,8 @@ gem 'puma', '~> 3.0'
 gem 'dotenv-rails', :groups => [:development, :test]
 # Use boxr to connect and interact with box api
 gem 'boxr'
+# To run asynchronous tasks
+gem 'resque'
 # Build JSON APIs with ease. Read more: https://github.com/rails/jbuilder
 # gem 'jbuilder', '~> 2.5'
 # Use Redis adapter to run Action Cable in production
