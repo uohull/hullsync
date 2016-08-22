@@ -8,6 +8,6 @@ class NotificationsController < ApplicationController
     logger.info("Item Name:\t#{params[:item_name]}")
     logger.info("Item Type:\t#{params[:item_type]}")
     logger.info("Item Id:\t#{params[:item_id]}")
-    Resque.enqueue(WatchProcessorJob, params[:item_id])
+    Resque.enqueue(WatchProcessorJob, params)
   end
 end
