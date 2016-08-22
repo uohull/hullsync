@@ -1,4 +1,4 @@
-require 'lib/box_client'
+require 'box_client'
 class WatchProcessorJob
   @queue = :watcher
 
