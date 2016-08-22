@@ -14,9 +14,18 @@
 
 * Copy the value for the code from the redirect url and paste it into the console <br> __NOTE__ You need to be quick as the code generated in valid only for 30 seconds
 
-* It will return the access token and refresh tokens. Save these in files named .box_access_token and .box_refresh_token (overwriting the existing file)
-
-The access token is valid for an hour. The refresh token is valid for 60 days. 
+* It will return the access token and refresh tokens. <br> These are saved to the file location _BOX_ACCESS_TOKEN_FILE_ and _BOX_REFRESH_TOKEN_FILE_
+defined in the [.env file](https://github.com/uohull/hullsync/blob/master/doc/envFormat.md). <br> The access token is valid for an hour. The refresh token is valid for 60 days. <br> You could define these values in the .env file as follows
+```
+cd ~/hullsync
+touch .env
+vim .env
+```
+```
+BOX_ACCESS_TOKEN_FILE=.box_access_token
+BOX_REFRESH_TOKEN_FILE=.box_refreh_token
+```
+ 
 * Once we do this we can access the client api using these credentials for the next hour.
 * We can use these two tokens in the boxr client and generate new tokens. So as long as the app is continuously running and we keep refreshing our tokens, we can use them for ever.
 * As long as the app is running and continually accessed, Boxr can refresh the tokens with a callback

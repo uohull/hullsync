@@ -7,7 +7,7 @@ class WatchProcessorJob
     if message['event_type'] == 'added_collaborator'
       puts 'PRE-PROCESSING'
       # if event is 'added collaborator' act on it
-      box_client = BoxClient.new()
+      box_client = BoxClient.new
       # Get folder metadata
       folder_id = message['item_id']
       puts folder_id
