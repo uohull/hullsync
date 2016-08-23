@@ -62,7 +62,7 @@ def parse_description(content_folder)
     metadata_txt.each do |key1, val1|
       metadata_csv.each do |metadata|
         unless metadata.has_key?(key1) and metadata[:key1]
-          metadata[:key1] = val1
+          metadata[key1] = val1
         end
       end
     end
@@ -87,7 +87,7 @@ def description_txt_to_hash(content_folder)
       key, val = line.split(':', 2)
       val = sanitize_value(key, val)
       if val
-        metadata[:key] = val
+        metadata[key.to_sym] = val
       end
     end
   end
@@ -112,7 +112,7 @@ def description_csv_to_hash(content_folder)
     row.to_hash.each do |key, val|
       val = sanitize_value(key, val)
       if val
-        row_metadata[:key] = val
+        row_metadata[key.to_sym] = val
       end
     end
     if row_metadata
@@ -137,11 +137,9 @@ def sanitize_value(key, val)
   end
   if DC_TERMS.include?(key) or OTHER_TERMS.include?(key)
     if MULTI_FIELDS.include?(key)
-      puts val
       val = val.split(';')
       val = val.map {|item| item.strip if item}
       val = val.reject { |item| item.empty? }
-      puts val
     end
     val
   else
@@ -156,16 +154,18 @@ def object_structure(metadata, content_folder)
     if File.directory?(File.join(content_folder, metadata[:filename]))
       base_dir = File.join(content_folder, metadata[:filename])
     end
-    if metadata.has_key?(:visibleFiles) and  metadata[:visibleFiles].any?
-      metadata[:visibleFiles].each do |filename|
-        puts "Checking file exists #{File.join(base_dir, filename)}"
-        if File.exists?(File.join(base_dir, filename))
-          puts "file exists"
-          files_exist.append(filename)
+    if metadata.has_key?(:visibleFiles) and metadata[:visibleFiles].any?
+      if metadata[:visibleFiles] == 'all'
+        files_exist = ['all']
+      else
+        metadata[:visibleFiles].each do |filename|
+          if File.exists?(File.join(base_dir, filename))
+            files_exist.append(filename)
+          end
         end
       end
     end
-    if files_exist.length > 1
+    if files_exist.any?
       [files_exist, 'single']
     else
       [files_exist, 'metadata_only']
