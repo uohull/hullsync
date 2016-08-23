@@ -79,13 +79,15 @@ def description_txt_to_hash(content_folder)
   metadata = {}
   File.open(description_file, 'r') do |f|
     f.each_line do |line|
-      line.strip! if line
+      if line
+        line = line.strip
+      end
       next unless line.length > 0
       next if line.start_with?('#')
       key, val = line.split(':', 2)
       val = sanitize_value(key, val)
       if val
-        metadata[key] = val
+        metadata[:key] = val
       end
     end
   end
@@ -127,11 +129,19 @@ def description_csv_to_hash(content_folder)
 end
 
 def sanitize_value(key, val)
-  key.strip! if key
-  val.strip! if val
+  if key
+    key = key.strip
+  end
+  if val
+    val = val.strip
+  end
   if DC_TERMS.include?(key) or OTHER_TERMS.include?(key)
     if MULTI_FIELDS.include?(key)
+      puts val
       val = val.split(';')
+      val = val.map {|item| item.strip if item}
+      val = val.reject { |item| item.empty? }
+      puts val
     end
     val
   else
@@ -146,9 +156,11 @@ def object_structure(metadata, content_folder)
     if File.directory?(File.join(content_folder, metadata[:filename]))
       base_dir = File.join(content_folder, metadata[:filename])
     end
-    if metadata.has_key?(:visibleFiles)
+    if metadata.has_key?(:visibleFiles) and  metadata[:visibleFiles].any?
       metadata[:visibleFiles].each do |filename|
+        puts "Checking file exists #{File.join(base_dir, filename)}"
         if File.exists?(File.join(base_dir, filename))
+          puts "file exists"
           files_exist.append(filename)
         end
       end
