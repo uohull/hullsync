@@ -59,10 +59,10 @@ def parse_description(content_folder)
   metadata_txt = description_txt_to_hash(content_folder)
   metadata_csv = description_csv_to_hash(content_folder)
   if metadata_txt.any? and metadata_csv.any?
-    metadata_txt.each do |key1, val1|
+    metadata_txt.each do |key, val|
       metadata_csv.each do |metadata|
-        unless metadata.has_key?(key1) and metadata[:key1]
-          metadata[key1] = val1
+        if not metadata.has_key?(key) or metadata[key].nil? or metadata[key].empty?
+          metadata[key] = val
         end
       end
     end
@@ -75,7 +75,7 @@ end
 def description_txt_to_hash(content_folder)
   # DC terms, citation, visibleFiles
   description_file = File.join(content_folder, 'DESCRIPTION.txt')
-  return {} unless File.exists?(description_file)
+  return {} unless File.exist?(description_file)
   metadata = {}
   File.open(description_file, 'r') do |f|
     f.each_line do |line|
@@ -103,7 +103,7 @@ end
 
 def description_csv_to_hash(content_folder)
   description_file = File.join(content_folder, 'DESCRIPTION.csv')
-  return {} unless File.exists?(description_file)
+  return {} unless File.exist?(description_file)
   metadata = []
   csv_text = File.read(description_file)
   csv = CSV.parse(csv_text, :headers => true)
@@ -116,7 +116,7 @@ def description_csv_to_hash(content_folder)
       end
     end
     if row_metadata
-      files_exist, structure = object_structure(metadata, content_folder)
+      files_exist, structure = object_structure(row_metadata, content_folder)
       if structure
         row_metadata[:objectStructure] = structure
         # TODO overwriting visibleFiles with visibleFiles that exist. Need to raise error if not all files exist
@@ -137,9 +137,13 @@ def sanitize_value(key, val)
   end
   if DC_TERMS.include?(key) or OTHER_TERMS.include?(key)
     if MULTI_FIELDS.include?(key)
-      val = val.split(';')
-      val = val.map {|item| item.strip if item}
-      val = val.reject { |item| item.empty? }
+      if val.nil? or val.empty?
+        val = []
+      else
+        val = val.split(';')
+        val = val.map {|item| item.strip if item}
+        val = val.reject { |item| item.nil? or item.empty? }
+      end
     end
     val
   else
@@ -149,19 +153,17 @@ end
 
 def object_structure(metadata, content_folder)
   files_exist = []
-  if metadata.has_key?(:filename) and (metadata[:filename] == 'all' or File.exists?(metadata[:filename]))
+  if metadata.has_key?(:filename) and (metadata[:filename] == 'all' or File.exists?(File.join(content_folder, metadata[:filename])))
     base_dir = content_folder
     if File.directory?(File.join(content_folder, metadata[:filename]))
       base_dir = File.join(content_folder, metadata[:filename])
     end
     if metadata.has_key?(:visibleFiles) and metadata[:visibleFiles].any?
-      if metadata[:visibleFiles] == 'all'
-        files_exist = ['all']
-      else
-        metadata[:visibleFiles].each do |filename|
-          if File.exists?(File.join(base_dir, filename))
-            files_exist.append(filename)
-          end
+      metadata[:visibleFiles].each do |filename|
+        if filename == 'all'
+          files_exist.append(filename)
+        elsif File.exist?(File.join(base_dir, filename))
+          files_exist.append(filename)
         end
       end
     end
