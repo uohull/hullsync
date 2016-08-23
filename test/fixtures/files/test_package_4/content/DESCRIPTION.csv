@@ -1,0 +1,4 @@
+filename,title,creator,description,visibleFiles
+BoxTechnicalImplementationDocumentation,Box API authentication details,Anusha Ranganathan,Notes from authenticating to the Box API,JWTAuthentication.md; oauth2Tokens.md
+TechnicalDesignDocumentation,Archivematica as a part of Hydra preservation workflow,Chris Awre; Richard Green; Richard Jones; Anusha Ranganathan,Poster for Hydra Connect 2015.,all
+BoxDataFlow.jpg,Hull Hydra Box workers,,,

@@ -1,0 +1,15 @@
+# Any of the following is acceptable abstract , accessRights , accrualMethod , accrualPeriodicity , accrualPolicy , alternative , audience , available , bibliographicCitation , conformsTo , contributor , coverage , created , creator , date , dateAccepted , dateCopyrighted , dateSubmitted , description , educationLevel , extent , format , hasFormat , hasPart , hasVersion , identifier , instructionalMethod , isFormatOf , isPartOf , isReferencedBy , isReplacedBy , isRequiredBy , issued , isVersionOf , language , license , mediator , medium , modified , provenance , publisher , references , relation , replaces , requires , rights , rightsHolder , source , spatial , subject , tableOfContents , temporal , title , type , valid
+
+# Other terms: filename, citation, visibleFiles
+
+# Other terms used for admin: objectStructure
+
+title: First test data package with no files visible 
+
+creator: Nevelina Aleksandrova; Richard Jones; Anusha Ranganathan; Martyn Whitwell
+
+description: Specimen data package with a few files submitted from Box.  This is to appear as single object in Hydra with no visible files
+
+citation: Cohen, Lara Langer. "Emily Dickinson's Teenage Fanclub." The Emily Dickinson Journal, vol. 23, no. 1, 2014, muse.jhu.edu/article/543643.
+
+visibleFiles: 
