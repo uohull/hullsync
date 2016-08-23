@@ -91,7 +91,10 @@ def description_txt_to_hash(content_folder)
   end
   if metadata.any?
     metadata[:filename] = 'all'
-    metadata[:objectStructure] = object_structure(metadata, content_folder)
+    files_exist, structure = object_structure(metadata, content_folder)
+    metadata[:objectStructure] = structure
+    # TODO overwriting visibleFiles with visibleFiles that exist. Need to raise error if not all files exist
+    metadata[:visibleFiles] = files_exist
   end
   metadata
 end
@@ -111,9 +114,11 @@ def description_csv_to_hash(content_folder)
       end
     end
     if row_metadata
-      structure = object_structure(metadata, content_folder)
+      files_exist, structure = object_structure(metadata, content_folder)
       if structure
         metadata[:objectStructure] = structure
+        # TODO overwriting visibleFiles with visibleFiles that exist. Need to raise error if not all files exist
+        metadata[:visibleFiles] = files_exist
         metadata.append(row_metadata)
       end
     end
@@ -135,12 +140,12 @@ def sanitize_value(key, val)
 end
 
 def object_structure(metadata, content_folder)
+  files_exist = []
   if metadata.has_key?(:filename) and (metadata[:filename] == 'all' or File.exists?(metadata[:filename]))
     base_dir = content_folder
     if File.directory?(File.join(content_folder, metadata[:filename]))
       base_dir = File.join(content_folder, metadata[:filename])
     end
-    files_exist = []
     if metadata.has_key?(:visibleFiles)
       metadata[:visibleFiles].each do |filename|
         if File.exists?(File.join(base_dir, filename))
@@ -148,14 +153,12 @@ def object_structure(metadata, content_folder)
         end
       end
     end
-    # TODO overwriting visibleFIes with visibleFiles that exist. Need to raise error if not all files exist
-    metadata[:visibleFiles] = files_exist
     if files_exist.length > 1
-      'single'
+      [files_exist, 'single']
     else
-      'metadata_only'
+      [files_exist, 'metadata_only']
     end
   else
-    nil
+    [files_exist, nil]
   end
 end
