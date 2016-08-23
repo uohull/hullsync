@@ -10,6 +10,8 @@ references relation replaces requires rights rightsHolder source spatial subject
 
 MULTI_FIELDS = %w(creator visibleFiles)
 
+OTHER_TERMS = %w(filename citation visibleFiles)
+
 def copy_folder(source, destination)
   return false unless File.directory?(source)
   if File.directory?(destination)
@@ -56,7 +58,7 @@ end
 def parse_description(content_folder)
   metadata_txt = description_txt_to_hash(content_folder)
   metadata_csv = description_csv_to_hash(content_folder)
-  if metadata_txt and metadata_csv
+  if metadata_txt.any? and metadata_csv.any?
     metadata_txt.each do |key1, val1|
       metadata_csv.each do |metadata|
         unless metadata.has_key?(key1) and metadata[:key1]
@@ -77,17 +79,17 @@ def description_txt_to_hash(content_folder)
   metadata = {}
   File.open(description_file, 'r') do |f|
     f.each_line do |line|
-      line = line.strip
-      next unless line
+      line.strip! if line
+      next unless line.length > 0
       next if line.start_with?('#')
-      key, val = line.split(':', 1)
+      key, val = line.split(':', 2)
       val = sanitize_value(key, val)
       if val
         metadata[key] = val
       end
     end
   end
-  if metadata
+  if metadata.any?
     metadata[:filename] = 'all'
     metadata[:objectStructure] = object_structure(metadata, content_folder)
   end
@@ -120,15 +122,15 @@ def description_csv_to_hash(content_folder)
 end
 
 def sanitize_value(key, val)
-  key = key.strip
-  val = val.strip
-  if DC_TERMS.include?(key)
+  key.strip! if key
+  val.strip! if val
+  if DC_TERMS.include?(key) or OTHER_TERMS.include?(key)
     if MULTI_FIELDS.include?(key)
       val = val.split(';')
     end
     val
   else
-    false
+    nil
   end
 end
 
