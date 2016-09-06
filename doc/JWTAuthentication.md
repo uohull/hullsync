@@ -69,7 +69,7 @@ require 'boxr'
 client = Boxr::Client.new('', jwt_private_key: File.read(ENV['JWT_PRIVATE_KEY_FILE']))
 client.folder_items(Boxr::ROOT)
 ```
-> I get the following error
+> I get the following error    
 > Boxr::BoxrError: 400: Bearer realm="Service", error="invalid_request", error_description="Malformed auth header"
 
 
