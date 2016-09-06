@@ -93,7 +93,7 @@ $ rails c
 ```
 ```
 > require 'boxr'
-> client = Boxr::Client.new('', jwt_private_key: File.read(ENV['JWT_PRIVATE_KEY_FILE']), as_user=ENV['BOX_USER_ID'], enterprise_id: nil)
+> client = Boxr::Client.new('', jwt_private_key: File.read(ENV['JWT_PRIVATE_KEY_FILE']), as_user: ENV['BOX_USER_ID'], enterprise_id: nil)
 > client.folder_items(Boxr::ROOT)
 ```
 > I get the following error    
