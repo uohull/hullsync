@@ -13,12 +13,11 @@ class DIPProcessorJob
     @dip = DIPReader.new(dip_folder)
     @hydra = HydraClient.new
 
-
     @dip.descriptions.each do |description|
       puts "\nCreating dataset for: "
       puts description
 
-      @hydra.create_dataset(description)
+      @hydra.create_dataset(description, @dip.aip_uuid)
 
     end
   end

@@ -2,7 +2,7 @@ require 'nokogiri'
 
 class DIPReader
 
-  attr_accessor :dip_folder, :admin_struct, :content_struct, :metadata, :descriptions
+  attr_accessor :dip_folder, :admin_struct, :content_struct, :metadata, :descriptions, :aip_uuid
 
   # example
   #dip_folder='/Users/martyn/Desktop/DIP/test_package_4_A.Ranganathan_2016-09-03T04_26_09-07_00-53f798ca-4076-4d77-92bd-0f15e0f6a11e'
@@ -17,6 +17,10 @@ class DIPReader
     mets_file = Dir.glob(File.join(@dip_folder, "METS.*.xml")).first
 
     if mets_file && File.exists?(mets_file)
+
+      # Get the AIP UUID from the filename
+      @aip_uuid = File.basename(mets_file)[/METS\.(.*)\.xml/i,1]
+
       # Read the METS xml file
       mets_xml = File.open(mets_file) { |f| Nokogiri::XML(f) }
 
@@ -35,23 +39,15 @@ class DIPReader
         if description["filename"].present?
           file_references = find_file_references(description["filename"])
 
-          puts "\nVISIBLE FILES:"
-          puts description["visibleFiles"]
-
-          puts "FILE REFERENCES:"
-          puts file_references
-
           if description["visibleFiles"].present?
             if description["visibleFiles"] == ["all"]
-              puts "ALL FILES!"
+              # all files
               description["fileReferences"] = file_references
             else
-              # filter the file references to only those on the visible list
+              # only visible files - filtered to only those on the visible list
               description["fileReferences"] = file_references.find_all{|ref| description["visibleFiles"].include?(ref.keys.first)}
             end
           end
-
-          description["uuids"] = file_references.map{|x| x.values.first[:uuid]}
         end
       end
 

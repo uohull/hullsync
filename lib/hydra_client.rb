@@ -48,7 +48,7 @@ class HydraClient
     nil
   end
 
-  def create_dataset(description)
+  def create_dataset(description, aip_uuid)
     # make sure we are authenticated
     authenticate
 
@@ -70,20 +70,13 @@ class HydraClient
         form.field_with(name: "dataset[subject_topic][]").value = DEFAULT_SUBJECT
         form.field_with(name: "dataset[description]").value = description["description"]
 
-        if description["uuids"].present?
-          form.field_with(name: "dataset[citation][]").value = description["uuids"].first
-        end
-
-        if description["uuids"].count > 1
-          for i in 1...(description["uuids"].count)
-            form.add_field!("dataset[citation][]", description["uuids"][i])
-          end
-        end
-
-
         if description["citation"].present?
-          form.add_field!("dataset[citation][]", description["citation"])
+          form.field_with(name: "dataset[citation][]").value = description["citation"]
         end
+
+        form.field_with(name: "dataset[see_also][]").value = "Archivematica AIP UUID: #{aip_uuid}"
+
+        form.field_with(name: "dataset[location_coordinates]").value = "" # for some reason, a newline character is added to this box
 
       end.submit
 
@@ -92,15 +85,28 @@ class HydraClient
 
       # now upload the files
       if description["fileReferences"].present?
+        file_response = response
         description["fileReferences"].each do |fileReference|
-          file_response = response.form_with(action: "/files") do |form|
+          file_response = file_response.form_with(action: "/files") do |form|
             form.file_upload_with(name: "Filedata[]").file_name = fileReference.values.first[:filename]
           end.submit
 
           puts "FILE SUBMITTED!"
           puts file_response.uri
         end
+        response = file_response
       end
+
+
+      # Finally, submit the form
+      container_id = response.form_with(action: "/files").field_with(name: "container_id").value
+
+      response.form_with(action: "/resource_workflow/#{container_id}") do |form|
+        form.click_button(form.button_with(type: "submit"))
+      end
+
+      puts "SUBMITTED!"
+      puts response.uri
 
 
     end
