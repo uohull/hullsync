@@ -25,6 +25,9 @@ gem 'resque'
 # Use Rack CORS for handling Cross-Origin Resource Sharing (CORS), making cross-origin AJAX possible
 # gem 'rack-cors'
 
+gem 'nokogiri'  # need this to parse the METS XML
+gem 'mechanize' # need this login to hull-hydra
+
 group :development, :test do
   # Call 'byebug' anywhere in the code to stop execution and get a debugger console
   gem 'byebug', platform: :mri
