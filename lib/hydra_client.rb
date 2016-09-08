@@ -48,7 +48,7 @@ class HydraClient
     nil
   end
 
-  def create_dataset(description, uuid="TODO - UUID HERE", files=[])
+  def create_dataset(description)
     # make sure we are authenticated
     authenticate
 
@@ -69,7 +69,17 @@ class HydraClient
         form.field_with(name: "dataset[title]").value = description["title"]
         form.field_with(name: "dataset[subject_topic][]").value = DEFAULT_SUBJECT
         form.field_with(name: "dataset[description]").value = description["description"]
-        form.field_with(name: "dataset[citation][]").value = uuid
+
+        if description["uuids"].present?
+          form.field_with(name: "dataset[citation][]").value = description["uuids"].first
+        end
+
+        if description["uuids"].count > 1
+          for i in 1...(description["uuids"].count)
+            form.add_field!("dataset[citation][]", description["uuids"][i])
+          end
+        end
+
 
         if description["citation"].present?
           form.add_field!("dataset[citation][]", description["citation"])
@@ -81,13 +91,15 @@ class HydraClient
       puts response.uri
 
       # now upload the files
-      files.each do |file|
-        file_response = response.form_with(action: "/files") do |form|
-          form.file_upload_with(name: "Filedata[]").file_name = file
-        end.submit
+      if description["fileReferences"].present?
+        description["fileReferences"].each do |fileReference|
+          file_response = response.form_with(action: "/files") do |form|
+            form.file_upload_with(name: "Filedata[]").file_name = fileReference.values.first[:filename]
+          end.submit
 
-        puts "FILE SUBMITTED!"
-        puts file_response.uri
+          puts "FILE SUBMITTED!"
+          puts file_response.uri
+        end
       end
 
 
