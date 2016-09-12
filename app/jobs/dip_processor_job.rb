@@ -14,11 +14,7 @@ class DIPProcessorJob
     @hydra = HydraClient.new
 
     @dip.descriptions.each do |description|
-      puts "\nCreating dataset for: "
-      puts description
-
-      @hydra.create_dataset(description, @dip.aip_uuid)
-
+      @hydra.create(@dip.metadata["content_model"], description, @dip.aip_uuid)
     end
   end
 
