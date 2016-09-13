@@ -58,15 +58,17 @@ class HydraClient
         response = create_journal_article(description, aip_uuid)
       when "BOOK"
         response = create_book(description, aip_uuid)
+      when "IMAGE"
+        response = create_generic_content("Photograph", description, aip_uuid)
       else # everything else defaults to "DATASET"
         response = create_dataset(description, aip_uuid)
     end
 
     # check if we successfully created the object - if so, upload any files and submit
     if response.uri.path.ends_with?("/edit")
-
       file_response = create_files(description, response)
       submit_to_qa(file_response)
+
     else
       puts "ERROR failed to create new #{object_type}: #{response.uri}"
       puts response.inspect
@@ -166,6 +168,33 @@ class HydraClient
   end
 
 
+  def create_generic_content(genre, description, aip_uuid)
+    # load the create new generic_contents form
+    @agent.get("/generic_contents/new") do |page|
+      response = page.form_with(action: "/generic_contents") do |form|
+        # enter the form values
+        form.field_with(name: "generic_content[genre]").value = genre
+
+        form.field_with(name: "generic_content[person_name][]").value = description["creator"].first
+        form.field_with(name: "generic_content[person_role_text][]").value = "Creator"
+
+        if description["creator"].count > 1
+          for i in 1...(description["creator"].count)
+            form.add_field!("generic_content[person_name][]", description["creator"][i])
+            form.add_field!("generic_content[person_role_text][]", "Creator")
+          end
+        end
+
+        form.field_with(name: "generic_content[title]").value = description["title"]
+        form.field_with(name: "generic_content[subject_topic][]").value = description["subject"] || DEFAULT_SUBJECT
+        form.field_with(name: "generic_content[description]").value = description["description"]
+        form.field_with(name: "generic_content[see_also][]").value = "Archivematica AIP UUID: #{aip_uuid}"
+        form.field_with(name: "generic_content[location_coordinates]").value = "" # for some reason, a newline character is added to this box
+      end.submit
+      puts "Generic content: #{response.uri}"
+      return response
+    end
+  end
 
 
   def create_files(description, response)
