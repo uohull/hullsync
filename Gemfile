@@ -6,7 +6,7 @@ gem 'rails', '~> 5.0.0', '>= 5.0.0.1'
 # Use Puma as the app server
 gem 'puma', '~> 3.0'
 # Use dot-env to store env variables
-gem 'dotenv-rails', :groups => [:development, :test]
+gem 'dotenv-rails' #, :groups => [:development, :test]
 # Use boxr to connect and interact with box api
 gem 'boxr'
 # To run asynchronous tasks
