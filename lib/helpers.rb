@@ -32,17 +32,29 @@ def create_bagit_metadata_files(bagit_content_dir, bagit_admin_dir, metadata)
     # Rights statement - default?
     # Hydra object structure - single, multiple, metadata only. Default is single metadata only
     # content model (Dataset) & pid root?
+  metadata[:object_structure] = 'metadata'
+  metadata[:content_model] = 'dataset'
   description = parse_description(bagit_content_dir)
-  if description.is_a?(Hash) and description.has_key?(:objectStructure)
+  if description.is_a?(Hash)
+    if description.has_key?(:objectStructure)
       metadata[:object_structure] = description[:objectStructure]
-  elsif description.is_a?(Array) and description.length == 1 and description[0].has_key?(:objectStructure)
-    metadata[:object_structure] = description[0][:objectStructure]
+    end
+    if description.has_key?(:content_model)
+      metadata[:content_model] = description[:content_model]
+    end
+  elsif description.is_a?(Array) and description.length == 1
+    if description[0].has_key?(:objectStructure)
+      metadata[:object_structure] = description[0][:objectStructure]
+    end
+    if description[0].has_key?(:content_model)
+      metadata[:content_model] = description[0][:content_model]
+    end
   elsif description.is_a?(Array) and description.length > 1 and description.all?
     metadata[:object_structure] = 'multiple'
-  else
-    metadata[:object_structure] = 'metadata'
+    if description[0].has_key?(:content_model)
+      metadata[:content_model] = description[0][:content_model]
+    end
   end
-  metadata[:content_model] = 'Dataset'
   create_admin_file(bagit_admin_dir, 'description.json', description)
   create_admin_file(bagit_admin_dir, 'admin_metadata.json', metadata)
 end
@@ -97,6 +109,7 @@ def description_txt_to_hash(content_folder)
     metadata[:objectStructure] = structure
     # TODO overwriting visibleFiles with visibleFiles that exist. Need to raise error if not all files exist
     metadata[:visibleFiles] = files_exist
+    metadata[:content_model] = content_model(metadata)
   end
   metadata
 end
@@ -121,6 +134,7 @@ def description_csv_to_hash(content_folder)
         row_metadata[:objectStructure] = structure
         # TODO overwriting visibleFiles with visibleFiles that exist. Need to raise error if not all files exist
         row_metadata[:visibleFiles] = files_exist
+        metadata[:content_model] = content_model(row_metadata)
         metadata.append(row_metadata)
       end
     end
@@ -175,4 +189,14 @@ def object_structure(metadata, content_folder)
   else
     [files_exist, nil]
   end
+end
+
+def content_model(metadata)
+  supported_models = ['journal_article', 'book', 'image', 'dataset']
+  if metadata.has_key?(:content_model) and supported_models.include?(metadata[:content_model].downcase)
+    model = metadata[:content_model].downcase
+  else
+    model = 'dataset'
+  end
+  model
 end

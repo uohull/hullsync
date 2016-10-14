@@ -4,8 +4,8 @@ class WatchProcessorJob
 
   def self.perform(message)
     if message['event_type'] == 'added_collaborator'
-      puts "1. ----------------------------------"
-      puts "In watch processor"
+      puts '1. ----------------------------------'
+      puts 'In watch processor'
       # if event is 'added collaborator' act on it
       box_client = BoxClient.new
       # Get folder metadata
