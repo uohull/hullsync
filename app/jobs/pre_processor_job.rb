@@ -27,7 +27,7 @@ class PreProcessorJob
       }
       create_bagit_metadata_files(bagit_content_dir, bagit_admin_dir, metadata)
       Resque.enqueue(InformUserJob, folder_id, original_filename, metadata)
-      Resque.enqueue(BagitProcessorJob, bagit_content_dir)
+      Resque.enqueue(ArchiveProcessorJob, bagit_content_dir)
     end
   end
 
