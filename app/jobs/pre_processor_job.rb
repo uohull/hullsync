@@ -3,6 +3,8 @@ class PreProcessorJob
   @queue = :pre_processor
 
   def self.perform(folder_id, original_filename)
+    puts "2. ----------------------------------"
+    puts "In pre processor"
     box_client = BoxClient.new
     # Get folder metadata
     folder = box_client.folder_from_id(folder_id)
