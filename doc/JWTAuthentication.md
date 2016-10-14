@@ -69,7 +69,9 @@ require 'boxr'
 client = Boxr::Client.new('', jwt_private_key: File.read(ENV['JWT_PRIVATE_KEY_FILE']))
 client.folder_items(Boxr::ROOT)
 ```
-> I get the error bad authentication header.
+> I get the following error    
+> Boxr::BoxrError: 400: Bearer realm="Service", error="invalid_request", error_description="Malformed auth header"
+
 
 Digging into the code, I was able to get a bit more information     
 https://github.com/cburnette/boxr/blob/master/lib/boxr/client.rb    
@@ -91,10 +93,11 @@ $ rails c
 ```
 ```
 > require 'boxr'
-> client = Boxr::Client.new('', jwt_private_key: File.read(ENV['JWT_PRIVATE_KEY_FILE']), as_user=ENV['BOX_USER_ID'], enterprise_id: nil)
+> client = Boxr::Client.new('', jwt_private_key: File.read(ENV['JWT_PRIVATE_KEY_FILE']), as_user: ENV['BOX_USER_ID'], enterprise_id: nil)
 > client.folder_items(Boxr::ROOT)
 ```
-> I get the error bad authentication header.
+> I get the following error    
+> Boxr::BoxrError: 400: Bearer realm="Service", error="invalid_request", error_description="Malformed auth header"
 
 Digging into the code, I was able to get a bit more information    
 https://github.com/cburnette/boxr/blob/master/lib/boxr/client.rb    

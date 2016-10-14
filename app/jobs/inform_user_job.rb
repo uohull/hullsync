@@ -3,6 +3,8 @@ class InformUserJob
   @queue = :inform_user
 
   def self.perform(folder_id, original_filename)
+    puts "3. ---------------------------"
+    puts "Inform user"
     box_client = BoxClient.new
     # Get folder metadata
     folder = box_client.folder_from_id(folder_id)

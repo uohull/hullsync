@@ -6,7 +6,7 @@ gem 'rails', '~> 5.0.0', '>= 5.0.0.1'
 # Use Puma as the app server
 gem 'puma', '~> 3.0'
 # Use dot-env to store env variables
-gem 'dotenv-rails', :groups => [:development, :test]
+gem 'dotenv-rails' #, :groups => [:development, :test]
 # Use boxr to connect and interact with box api
 gem 'boxr'
 # To run asynchronous tasks
@@ -24,6 +24,9 @@ gem 'resque'
 
 # Use Rack CORS for handling Cross-Origin Resource Sharing (CORS), making cross-origin AJAX possible
 # gem 'rack-cors'
+
+gem 'nokogiri'  # need this to parse the METS XML
+gem 'mechanize' # need this login to hull-hydra
 
 group :development, :test do
   # Call 'byebug' anywhere in the code to stop execution and get a debugger console
