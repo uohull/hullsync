@@ -33,11 +33,11 @@ def create_bagit_metadata_files(bagit_content_dir, bagit_admin_dir, metadata)
     # Hydra object structure - single, multiple, metadata only. Default is single metadata only
     # content model (Dataset) & pid root?
   description = parse_description(bagit_content_dir)
-  if description.is_a?(Hash)
-    metadata[:object_structure] = description[:objectStructure]
-  elsif description.is_a?(Array) and description.length == 1
+  if description.is_a?(Hash) and description.has_key?(:objectStructure)
+      metadata[:object_structure] = description[:objectStructure]
+  elsif description.is_a?(Array) and description.length == 1 and description[0].has_key?(:objectStructure)
     metadata[:object_structure] = description[0][:objectStructure]
-  elsif description.is_a?(Array) and description.length > 1
+  elsif description.is_a?(Array) and description.length > 1 and description.all?
     metadata[:object_structure] = 'multiple'
   else
     metadata[:object_structure] = 'metadata'
