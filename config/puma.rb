@@ -5,7 +5,14 @@
 # and maximum, this matches the default thread size of Active Record.
 #
 threads_count = ENV.fetch("RAILS_MAX_THREADS") { 5 }.to_i
-threads threads_count, threads_count
+threads 1, threads_count
+
+app_dir = File.expand_path("../..", __FILE__)
+shared_dir = "#{app_dir}/shared"
+
+puts "TESTING"
+puts app_dir
+puts shared_dir
 
 # Specifies the `port` that Puma will listen on to receive requests, default is 3000.
 #
@@ -13,7 +20,7 @@ port        ENV.fetch("PORT") { 3000 }
 
 # Specifies the `environment` that Puma will run in.
 #
-environment ENV.fetch("RAILS_ENV") { "development" }
+environment ENV.fetch("RAILS_ENV") { "production" }
 
 # Specifies the number of `workers` to boot in clustered mode.
 # Workers are forked webserver processes. If using threads and workers together
@@ -45,3 +52,16 @@ environment ENV.fetch("RAILS_ENV") { "development" }
 
 # Allow puma to be restarted by `rails restart` command.
 plugin :tmp_restart
+
+# Set up socket location
+bind "unix://#{shared_dir}/sockets/puma.sock"
+
+# Logging
+stdout_redirect "#{shared_dir}/log/puma.stdout.log", "#{shared_dir}/log/puma.stderr.log", true
+
+# Set master PID and state locations
+pidfile "#{shared_dir}/pids/puma.pid"
+state_path "#{shared_dir}/pids/puma.state"
+activate_control_app
+
+
