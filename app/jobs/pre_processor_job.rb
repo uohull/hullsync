@@ -3,6 +3,8 @@ class PreProcessorJob
   @queue = :pre_processor
 
   def self.perform(folder_id, original_filename)
+    puts '2. ----------------------------------'
+    puts 'In pre processor'
     box_client = BoxClient.new
     # Get folder metadata
     folder = box_client.folder_from_id(folder_id)
@@ -25,7 +27,7 @@ class PreProcessorJob
       }
       create_bagit_metadata_files(bagit_content_dir, bagit_admin_dir, metadata)
       Resque.enqueue(InformUserJob, folder_id, original_filename, metadata)
-      Resque.enqueue(BagitProcessorJob, bagit_content_dir)
+      Resque.enqueue(ArchiveProcessorJob, bagit_content_dir)
     end
   end
 

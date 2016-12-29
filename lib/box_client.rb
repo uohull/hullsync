@@ -47,6 +47,7 @@ class BoxClient
     end
     # timestamp = folder.created_at.gsub('-', '').gsub(':', '')
     new_name = "#{original_name}_#{username}_#{folder.created_at}_#{status}"
+    puts new_name
     @client.update_folder(folder, name: new_name)
   end
 
