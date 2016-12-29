@@ -42,3 +42,6 @@ bower.json
 .byebug_history
 
 .idea/
+
+box_*_key.pem
+.box_*_token
