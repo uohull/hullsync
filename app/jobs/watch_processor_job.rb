@@ -5,12 +5,12 @@ class WatchProcessorJob
   def self.perform(message)
     if message['event_type'] == 'added_collaborator'
 
-      logger.info("1. ---------------------------")
-      logger.info('In watch processor')
-      logger.info("Event:\t#{params[:event_type]}")
-      logger.info("Item Name:\t#{params[:item_name]}")
-      logger.info("Item Type:\t#{params[:item_type]}")
-      logger.info("Item Id:\t#{params[:item_id]}")
+      puts("1. ---------------------------")
+      puts('In watch processor')
+      puts("Event:\t#{params[:event_type]}")
+      puts("Item Name:\t#{params[:item_name]}")
+      puts("Item Type:\t#{params[:item_type]}")
+      puts("Item Id:\t#{params[:item_id]}")
 
 
 
