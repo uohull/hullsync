@@ -7,13 +7,8 @@ class WatchProcessorJob
 
       puts("1. ---------------------------")
       puts('In watch processor')
-      puts("Event:\t#{params[:event_type]}")
-      puts("Item Name:\t#{params[:item_name]}")
-      puts("Item Type:\t#{params[:item_type]}")
-      puts("Item Id:\t#{params[:item_id]}")
-
-
-
+      puts(message)
+      
       # if event is 'added collaborator' act on it
       box_client = BoxClient.new()
       # Get folder metadata
