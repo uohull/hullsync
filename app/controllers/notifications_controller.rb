@@ -11,7 +11,7 @@ class NotificationsController < ApplicationController
 
     Resque.enqueue(WatchProcessorJob, params)
 
-    render json: {'note': "Box Notification Received", 'params': params}
+    render json:{'note': "Box Notification Received", 'params': params}
 
   end
 end
