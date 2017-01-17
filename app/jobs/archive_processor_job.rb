@@ -12,8 +12,7 @@ class ArchiveProcessorJob
 
     # move to archivematica processing area
     FileUtils.move(bagit_temp_dir, ENV['BAGIT_ROOT_DIR'])
-    
-    # TODO archivematica processor - run Archivematica tools and get pid
-    # Resque.enqueue(ArchivematicaStatusJob, pid)
+
+    Resque.enqueue(ArchivematicaStatusJob)
   end
 end
