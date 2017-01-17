@@ -134,7 +134,7 @@ def description_csv_to_hash(content_folder)
         row_metadata[:objectStructure] = structure
         # TODO overwriting visibleFiles with visibleFiles that exist. Need to raise error if not all files exist
         row_metadata[:visibleFiles] = files_exist
-        metadata[:content_model] = content_model(row_metadata)
+        row_metadata[:content_model] = content_model(row_metadata)
         metadata.append(row_metadata)
       end
     end
