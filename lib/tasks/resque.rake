@@ -7,7 +7,7 @@ task "resque:setup" => :environment
 # see https://github.com/defunkt/resque/issues/49
 # see http://redis.io/commands - new commands
 desc 'Clear pending tasks'
-task clear: :environment do
+task "resque:clear" => :environment do
   queues = Resque.queues
   queues.each do |queue_name|
     puts "Clearing #{queue_name}..."
