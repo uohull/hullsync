@@ -32,31 +32,142 @@ def create_bagit_metadata_files(bagit_content_dir, bagit_admin_dir, metadata)
     # Rights statement - default?
     # Hydra object structure - single, multiple, metadata only. Default is single metadata only
     # content model (Dataset) & pid root?
-  metadata[:object_structure] = 'metadata'
-  metadata[:content_model] = 'dataset'
-  description = parse_description(bagit_content_dir)
-  if description.is_a?(Hash)
-    if description.has_key?(:objectStructure)
-      metadata[:object_structure] = description[:objectStructure]
+
+  description_txt, description_csv = parse_descriptions(bagit_content_dir)
+
+  if description_csv.length > 1
+    metadata[:object_structure] ||= 'multiple'
+    metadata[:content_model] ||= description_txt[:content_model]
+
+  elsif description_csv.length == 1
+    metadata[:object_structure] ||= description_csv.first[:object_structure]
+    metadata[:content_model] ||= description_csv.first[:content_model]
+
+  else
+    metadata[:object_structure] ||= description_txt[:object_structure]
+    metadata[:content_model] ||= description_txt[:content_model]
+  end
+
+  create_admin_file(bagit_admin_dir, 'admin_metadata.json', metadata)
+
+  if description_csv.any?
+    create_admin_file(bagit_admin_dir, 'description.json', description_csv)
+  else
+    create_admin_file(bagit_admin_dir, 'description.json', description_txt)
+  end
+end
+
+
+def parse_descriptions(content_folder)
+  # DC terms, citation, visibleFiles
+  description_txt_file = File.join(content_folder, 'DESCRIPTION.txt')
+  description_txt = {}
+  if File.exist?(description_txt_file)
+    File.open(description_txt_file, 'r') do |f|
+      f.each_line do |line|
+        if line
+          line = line.strip
+        end
+        next unless line.length > 0
+        next if line.start_with?('#')
+        key, val = line.split(':', 2)
+        val = sanitize_value(key, val)
+        if val
+          description_txt[key.to_sym] = val
+        end
+      end
     end
-    if description.has_key?(:content_model)
-      metadata[:content_model] = description[:content_model]
-    end
-  elsif description.is_a?(Array) and description.length == 1
-    if description[0].has_key?(:objectStructure)
-      metadata[:object_structure] = description[0][:objectStructure]
-    end
-    if description[0].has_key?(:content_model)
-      metadata[:content_model] = description[0][:content_model]
-    end
-  elsif description.is_a?(Array) and description.length > 1 and description.all?
-    metadata[:object_structure] = 'multiple'
-    if description[0].has_key?(:content_model)
-      metadata[:content_model] = description[0][:content_model]
+    
+    description_txt[:content_model] = parse_content_model(description_txt[:content_model])
+    description_txt[:filename] = parse_filename(content_folder, description_txt[:filename])
+    description_txt[:visibleFiles] = parse_visible_files(content_folder, description_txt[:filename], description_txt[:visibleFiles])
+  end
+
+  description_csv_file = File.join(content_folder, 'DESCRIPTION.csv')
+  description_csv = []
+  if File.exist?(description_csv_file)
+    csv_text = File.read(description_csv_file)
+    csv = CSV.parse(csv_text, :headers => true)
+    csv.each do |row|
+      description_csv_row = {}
+      row.to_hash.each do |key, val|
+        val = sanitize_value(key, val)
+        if val
+          description_csv_row[key.to_sym] = val
+        end
+      end
+
+      # use description.txt to fill in blanks on description.csv
+      description_txt.each do |key, val|
+        if (not description_csv_row.has_key?(key)) or description_csv_row[key].nil? or description_csv_row[key].empty?
+          description_csv_row[key] = val
+        end
+      end
+
+      description_csv_row[:content_model] = parse_content_model(description_csv_row[:content_model])
+      description_csv_row[:filename] = parse_filename(content_folder, description_csv_row[:filename])
+      description_csv_row[:visibleFiles] = parse_visible_files(content_folder, description_csv_row[:filename], description_csv_row[:visibleFiles])
+
+      description_csv.append(description_csv_row)
     end
   end
-  create_admin_file(bagit_admin_dir, 'description.json', description)
-  create_admin_file(bagit_admin_dir, 'admin_metadata.json', metadata)
+
+  if description_csv.length == 0
+    description_txt[:object_structure] = 'metadata'
+  elsif description_csv.length == 1
+    description_txt[:object_structure] = 'single'
+    description_csv.first[:object_structure] = 'single'
+  else
+    description_txt[:object_structure] = 'multiple'
+    description_csv.each {|description_csv_row| description_csv_row[:object_structure] = 'multiple'}
+  end
+
+  return description_txt, description_csv
+end
+
+def parse_content_model(content_model)
+  supported_models = ['journal_article', 'book', 'image', 'dataset']
+  if content_model.present? && supported_models.include?(content_model)
+    content_model
+  else
+    'dataset'
+  end
+end
+
+def parse_filename(content_folder, filename)
+  if filename.present? && File.exists?(File.join(content_folder, filename))
+    filename
+  else
+    'all'
+  end
+end
+
+def parse_visible_files(content_folder, filename, visible_files)
+  parsed_visible_files = []
+
+  if File.directory?(File.join(content_folder, filename))
+    basedir = File.join(content_folder, filename)
+  else
+    basedir = content_folder
+  end
+
+  if !visible_files.nil?
+    if visible_files.instance_of?(Array)
+      visible_files.each do |filename|
+        if filename == 'all' || File.exists?(File.join(basedir, filename))
+          parsed_visible_files.append(filename)
+        end
+      end
+    else
+      if visible_files.instance_of?(String)
+        if visible_files == 'all' || File.exists?(File.join(basedir, filename))
+          parsed_visible_files.append(visible_files)
+        end
+      end
+    end
+  end
+
+  return parsed_visible_files
 end
 
 def create_admin_file(bagit_admin_dir, filename, data)
@@ -65,81 +176,6 @@ def create_admin_file(bagit_admin_dir, filename, data)
     FileUtils.mkdir_p(bagit_admin_dir)
   end
   File.write(File.join(bagit_admin_dir, filename), content)
-end
-
-def parse_description(content_folder)
-  metadata_txt = description_txt_to_hash(content_folder)
-  metadata_csv = description_csv_to_hash(content_folder)
-  if metadata_txt.any? and metadata_csv.any?
-    metadata_txt.each do |key, val|
-      metadata_csv.each do |metadata|
-        if not metadata.has_key?(key) or metadata[key].nil? or metadata[key].empty?
-          metadata[key] = val
-        end
-      end
-    end
-    metadata_csv
-  else
-    metadata_txt
-  end
-end
-
-def description_txt_to_hash(content_folder)
-  # DC terms, citation, visibleFiles
-  description_file = File.join(content_folder, 'DESCRIPTION.txt')
-  return {} unless File.exist?(description_file)
-  metadata = {}
-  File.open(description_file, 'r') do |f|
-    f.each_line do |line|
-      if line
-        line = line.strip
-      end
-      next unless line.length > 0
-      next if line.start_with?('#')
-      key, val = line.split(':', 2)
-      val = sanitize_value(key, val)
-      if val
-        metadata[key.to_sym] = val
-      end
-    end
-  end
-  if metadata.any?
-    metadata[:filename] = 'all'
-    files_exist, structure = object_structure(metadata, content_folder)
-    metadata[:objectStructure] = structure
-    # TODO overwriting visibleFiles with visibleFiles that exist. Need to raise error if not all files exist
-    metadata[:visibleFiles] = files_exist
-    metadata[:content_model] = content_model(metadata)
-  end
-  metadata
-end
-
-def description_csv_to_hash(content_folder)
-  description_file = File.join(content_folder, 'DESCRIPTION.csv')
-  return {} unless File.exist?(description_file)
-  metadata = []
-  csv_text = File.read(description_file)
-  csv = CSV.parse(csv_text, :headers => true)
-  csv.each do |row|
-    row_metadata = {}
-    row.to_hash.each do |key, val|
-      val = sanitize_value(key, val)
-      if val
-        row_metadata[key.to_sym] = val
-      end
-    end
-    if row_metadata
-      files_exist, structure = object_structure(row_metadata, content_folder)
-      if structure
-        row_metadata[:objectStructure] = structure
-        # TODO overwriting visibleFiles with visibleFiles that exist. Need to raise error if not all files exist
-        row_metadata[:visibleFiles] = files_exist
-        row_metadata[:content_model] = content_model(row_metadata)
-        metadata.append(row_metadata)
-      end
-    end
-  end
-  metadata
 end
 
 def sanitize_value(key, val)
@@ -163,40 +199,4 @@ def sanitize_value(key, val)
   else
     nil
   end
-end
-
-def object_structure(metadata, content_folder)
-  files_exist = []
-  if metadata.has_key?(:filename) and (metadata[:filename] == 'all' or File.exists?(File.join(content_folder, metadata[:filename])))
-    base_dir = content_folder
-    if File.directory?(File.join(content_folder, metadata[:filename]))
-      base_dir = File.join(content_folder, metadata[:filename])
-    end
-    if metadata.has_key?(:visibleFiles) and metadata[:visibleFiles].any?
-      metadata[:visibleFiles].each do |filename|
-        if filename == 'all'
-          files_exist.append(filename)
-        elsif File.exist?(File.join(base_dir, filename))
-          files_exist.append(filename)
-        end
-      end
-    end
-    if files_exist.any?
-      [files_exist, 'single']
-    else
-      [files_exist, 'metadata_only']
-    end
-  else
-    [files_exist, nil]
-  end
-end
-
-def content_model(metadata)
-  supported_models = ['journal_article', 'book', 'image', 'dataset']
-  if metadata.has_key?(:content_model) and supported_models.include?(metadata[:content_model].downcase)
-    model = metadata[:content_model].downcase
-  else
-    model = 'dataset'
-  end
-  model
 end
