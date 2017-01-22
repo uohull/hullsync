@@ -30,23 +30,13 @@ def create_bagit_metadata_files(bagit_content_dir, bagit_admin_dir, metadata)
     # ingest_route
     # original_name (of file or dir)
     # Rights statement - default?
-    # Hydra object structure - single, multiple, metadata only. Default is single metadata only
+    # Hydra object structure - single, multiple, metadata only. Default is metadata only
     # content model (Dataset) & pid root?
 
-  description_txt, description_csv = parse_descriptions(bagit_content_dir)
+  description_txt, description_csv, object_structure, content_model = parse_descriptions(bagit_content_dir)
 
-  if description_csv.length > 1
-    metadata[:object_structure] ||= 'multiple'
-    metadata[:content_model] ||= description_txt[:content_model]
-
-  elsif description_csv.length == 1
-    metadata[:object_structure] ||= description_csv.first[:object_structure]
-    metadata[:content_model] ||= description_csv.first[:content_model]
-
-  else
-    metadata[:object_structure] ||= description_txt[:object_structure]
-    metadata[:content_model] ||= description_txt[:content_model]
-  end
+  metadata[:object_structure] = object_structure
+  metadata[:content_model] = content_model
 
   create_admin_file(bagit_admin_dir, 'admin_metadata.json', metadata)
 
@@ -77,7 +67,7 @@ def parse_descriptions(content_folder)
         end
       end
     end
-    
+
     description_txt[:content_model] = parse_content_model(description_txt[:content_model])
     description_txt[:filename] = parse_filename(content_folder, description_txt[:filename])
     description_txt[:visibleFiles] = parse_visible_files(content_folder, description_txt[:filename], description_txt[:visibleFiles])
@@ -112,17 +102,43 @@ def parse_descriptions(content_folder)
     end
   end
 
-  if description_csv.length == 0
-    description_txt[:object_structure] = 'metadata'
+  # if there are multiple items in description.csv, the object_structure is multiple
+  # if there are multiple items in description.txt.visibleFiles, the object_structure is multiple
+  # if there is one item in description.csv, the object_structure is single
+  # if there is one item in description.txt.visibleFiles, the object_structure is single
+  # otherwise, the object_structure is metadata
+
+  if description_csv.length > 1
+    object_structure = 'multiple'
+    content_model = description_txt[:content_model]
+
+  elsif description_txt[:visibleFiles].length > 1
+    object_structure = 'multiple'
+    content_model = description_txt[:content_model]
+
   elsif description_csv.length == 1
-    description_txt[:object_structure] = 'single'
-    description_csv.first[:object_structure] = 'single'
+    object_structure = 'single'
+    content_model = description_csv.first[:content_model]
+
+  elsif description_txt[:visibleFiles].length == 1
+    object_structure = 'single'
+    content_model = description_txt[:content_model]
+
   else
-    description_txt[:object_structure] = 'multiple'
-    description_csv.each {|description_csv_row| description_csv_row[:object_structure] = 'multiple'}
+    object_structure = 'metadata'
+    content_model = description_txt[:content_model]
   end
 
-  return description_txt, description_csv
+  # ensure determined object_structure and content_model are applied uniformly to both descriptions
+  description_txt[:object_structure] = object_structure
+  description_txt[:content_model] = content_model
+
+  description_csv.each do |description_csv_row|
+    description_csv_row[:object_structure] = object_structure
+    description_csv_row[:content_model] = content_model
+  end
+
+  return description_txt, description_csv, object_structure, content_model
 end
 
 def parse_content_model(content_model)
@@ -153,14 +169,19 @@ def parse_visible_files(content_folder, filename, visible_files)
 
   if !visible_files.nil?
     if visible_files.instance_of?(Array)
-      visible_files.each do |filename|
-        if filename == 'all' || File.exists?(File.join(basedir, filename))
-          parsed_visible_files.append(filename)
+      visible_files.each do |visible_files_filename|
+        if visible_files_filename == 'all'
+          parsed_visible_files = Dir.entries(basedir).select {|f| !File.directory?(f) && f !~ /^description\.(txt|csv)$/i}
+          break
+        elsif File.exists?(File.join(basedir, visible_files_filename))
+          parsed_visible_files.append(visible_files_filename)
         end
       end
     else
       if visible_files.instance_of?(String)
-        if visible_files == 'all' || File.exists?(File.join(basedir, filename))
+        if visible_files == 'all'
+          parsed_visible_files = Dir.entries(basedir).select {|f| !File.directory?(f) && f !~ /^description\.(txt|csv)$/i}
+        elsif File.exists?(File.join(basedir, visible_files))
           parsed_visible_files.append(visible_files)
         end
       end
