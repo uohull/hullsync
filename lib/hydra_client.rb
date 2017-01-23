@@ -50,10 +50,10 @@ class HydraClient
     nil
   end
 
-  def create(object_type, description, aip_uuid)
+  def create(content_model, description, aip_uuid)
     # make sure we are authenticated
     authenticate
-    case object_type.try(:upcase)
+    case content_model.try(:upcase)
       when "JOURNAL_ARTICLE"
         response = create_journal_article(description, aip_uuid)
       when "BOOK"
@@ -70,7 +70,7 @@ class HydraClient
       submit_to_qa(file_response)
 
     else
-      puts "ERROR failed to create new #{object_type}: #{response.uri}"
+      puts "ERROR failed to create new #{content_model}: #{response.uri}"
       puts response.inspect
       puts response.header
     end

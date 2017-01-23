@@ -76,7 +76,7 @@ def parse_descriptions(content_folder)
       end
     end
 
-    description_txt[:content_model] = parse_content_model(description_txt[:content_model])
+    description_txt[:contentModel] = parse_content_model(description_txt[:contentModel])
     description_txt[:filename] = parse_filename(content_folder, description_txt[:filename])
     description_txt[:visibleFiles] = parse_visible_files(content_folder, description_txt[:filename], description_txt[:visibleFiles])
   else
@@ -106,7 +106,7 @@ def parse_descriptions(content_folder)
         end
       end
 
-      description_csv_row[:content_model] = parse_content_model(description_csv_row[:content_model])
+      description_csv_row[:contentModel] = parse_content_model(description_csv_row[:contentModel])
       description_csv_row[:filename] = parse_filename(content_folder, description_csv_row[:filename])
       description_csv_row[:visibleFiles] = parse_visible_files(content_folder, description_csv_row[:filename], description_csv_row[:visibleFiles])
 
@@ -122,41 +122,41 @@ def parse_descriptions(content_folder)
 
   if description_csv.length > 1
     object_structure = 'multiple'
-    content_model = description_txt[:content_model]
+    content_model = description_txt[:contentModel]
 
   elsif description_txt[:visibleFiles].length > 1
     object_structure = 'multiple'
-    content_model = description_txt[:content_model]
+    content_model = description_txt[:contentModel]
 
   elsif description_csv.length == 1
     object_structure = 'single'
-    content_model = description_csv.first[:content_model]
+    content_model = description_csv.first[:contentModel]
 
   elsif description_txt[:visibleFiles].length == 1
     object_structure = 'single'
-    content_model = description_txt[:content_model]
+    content_model = description_txt[:contentModel]
 
   else
     object_structure = 'metadata'
-    content_model = description_txt[:content_model]
+    content_model = description_txt[:contentModel]
   end
 
-  # ensure determined object_structure and content_model are applied uniformly to both descriptions
+  # ensure determined object_structure and contentModel are applied uniformly to both descriptions
   description_txt[:object_structure] = object_structure
-  description_txt[:content_model] = content_model
+  description_txt[:contentModel] = content_model
 
   description_csv.each do |description_csv_row|
     description_csv_row[:object_structure] = object_structure
-    description_csv_row[:content_model] = content_model
+    description_csv_row[:contentModel] = content_model
   end
 
   return description_txt, description_csv, object_structure, content_model
 end
 
-def parse_content_model(content_model)
+def parse_content_model(contentModel)
   supported_models = ['journal_article', 'book', 'image', 'dataset']
-  if content_model.present? && supported_models.include?(content_model)
-    content_model
+  if contentModel.present? && supported_models.include?(contentModel)
+    contentModel
   else
     'dataset'
   end
