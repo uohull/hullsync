@@ -34,10 +34,17 @@ class PreProcessorJob
           ingest_route: 'box',
           original_name: original_filename
       }
-      create_bagit_metadata_files(bagit_content_dir, bagit_admin_dir, metadata)
 
-      Resque.enqueue(InformUserJob, folder_id, original_filename, metadata)
-      Resque.enqueue(ArchiveProcessorJob, bagit_temp_dir)
+      if create_bagit_metadata_files(bagit_content_dir, bagit_admin_dir, metadata)
+        print "Invoking Archivematica processing"
+
+        Resque.enqueue(InformUserJob, folder_id, original_filename, metadata, 'archiving')
+        Resque.enqueue(ArchiveProcessorJob, bagit_temp_dir)
+      else
+        print "Bagit/metadata processing failed"
+        Resque.enqueue(InformUserJob, folder_id, original_filename, metadata, 'FAILED')
+      end
+
     end
   end
 

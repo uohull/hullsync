@@ -35,23 +35,31 @@ def create_bagit_metadata_files(bagit_content_dir, bagit_admin_dir, metadata)
 
   description_txt, description_csv, object_structure, content_model = parse_descriptions(bagit_content_dir)
 
-  metadata[:object_structure] = object_structure
-  metadata[:content_model] = content_model
-
-  create_admin_file(bagit_admin_dir, 'admin_metadata.json', metadata)
-
-  if description_csv.any?
-    create_admin_file(bagit_admin_dir, 'description.json', description_csv)
+  if description_txt.nil?
+    return false
   else
-    create_admin_file(bagit_admin_dir, 'description.json', description_txt)
+    metadata[:object_structure] = object_structure
+    metadata[:content_model] = content_model
+
+    create_admin_file(bagit_admin_dir, 'admin_metadata.json', metadata)
+
+    if description_csv.any?
+      create_admin_file(bagit_admin_dir, 'description.json', description_csv)
+    else
+      create_admin_file(bagit_admin_dir, 'description.json', description_txt)
+    end
+    return true
   end
+
 end
 
 
 def parse_descriptions(content_folder)
   # DC terms, citation, visibleFiles
-  description_txt_file = File.join(content_folder, 'DESCRIPTION.txt')
   description_txt = {}
+  description_txt_file = File.join(content_folder, 'DESCRIPTION.txt')
+  description_txt_file = File.join(content_folder, 'DESCRIPTION.TXT') unless File.exists?(description_txt_file)
+
   if File.exist?(description_txt_file)
     File.open(description_txt_file, 'r') do |f|
       f.each_line do |line|
@@ -71,9 +79,13 @@ def parse_descriptions(content_folder)
     description_txt[:content_model] = parse_content_model(description_txt[:content_model])
     description_txt[:filename] = parse_filename(content_folder, description_txt[:filename])
     description_txt[:visibleFiles] = parse_visible_files(content_folder, description_txt[:filename], description_txt[:visibleFiles])
+  else
+    print "ERROR: file not found: #{description_txt_file}"
+    return nil, nil, nil, nil
   end
 
   description_csv_file = File.join(content_folder, 'DESCRIPTION.csv')
+  description_csv_file = File.join(content_folder, 'DESCRIPTION.CSV') unless File.exists?(description_csv_file)
   description_csv = []
   if File.exist?(description_csv_file)
     csv_text = File.read(description_csv_file)
