@@ -38,6 +38,8 @@ class DIPReader
       @descriptions.each do |description|
         if description["filename"].present?
           file_references = find_file_references(description["filename"])
+          puts "File references:"
+          puts file_references.inspect
 
           if description["visibleFiles"].present?
             if description["visibleFiles"] == ["all"]
@@ -89,8 +91,10 @@ class DIPReader
 
 
   def find_file_references(content_filename)
+    puts "Finding file references for #{content_filename}"
     div = @content_struct.at_xpath("mets:div[@LABEL='#{content_filename}']")
     if div.nil?
+      puts "No file references found"
       []
     else
       if div.at_xpath("@TYPE").value == "Directory"

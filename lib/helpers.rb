@@ -41,11 +41,17 @@ def create_bagit_metadata_files(bagit_content_dir, bagit_admin_dir, metadata)
     metadata[:object_structure] = object_structure
     metadata[:content_model] = content_model
 
+    puts "metadata:"
+    puts metadata.inspect
+
     create_admin_file(bagit_admin_dir, 'admin_metadata.json', metadata)
 
+    puts "description"
     if description_csv.any?
+      puts description_csv.inspect
       create_admin_file(bagit_admin_dir, 'description.json', description_csv)
     else
+      puts description_txt.inspect
       create_admin_file(bagit_admin_dir, 'description.json', description_txt)
     end
     return true
@@ -114,17 +120,13 @@ def parse_descriptions(content_folder)
     end
   end
 
-  # if there are multiple items in description.csv, the object_structure is multiple
-  # if there are multiple items in description.txt.visibleFiles, the object_structure is multiple
-  # if there is one item in description.csv, the object_structure is single
-  # if there is one item in description.txt.visibleFiles, the object_structure is single
+  # if there are multiple items in description.csv, multiple records are created in Hydra
+  # if there are multiple items in description.txt.visibleFiles, only a single object is created in Hydra
+  # if there is one item in description.csv, only a single object is created in Hydra
+  # if there is one item in description.txt.visibleFiles, only a single object is created in Hydra
   # otherwise, the object_structure is metadata
 
   if description_csv.length > 1
-    object_structure = 'multiple'
-    content_model = description_txt[:contentModel]
-
-  elsif description_txt[:visibleFiles].length > 1
     object_structure = 'multiple'
     content_model = description_txt[:contentModel]
 
@@ -132,7 +134,7 @@ def parse_descriptions(content_folder)
     object_structure = 'single'
     content_model = description_csv.first[:contentModel]
 
-  elsif description_txt[:visibleFiles].length == 1
+  elsif description_txt[:visibleFiles].length >= 1
     object_structure = 'single'
     content_model = description_txt[:contentModel]
 

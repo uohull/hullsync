@@ -10,12 +10,13 @@ class DIPProcessorJob
 
   def self.perform(dip_folder)
     puts '5. ----------------------------------'
-    puts 'In DIP processor'
+    puts "In DIP processor: #{dip_folder}"
     @dip = DIPReader.new(dip_folder)
     @hydra = HydraClient.new
 
     @dip.descriptions.each do |description|
-      puts "Creating..."
+      puts "Creating record in Hydra for AIP: #{@dip.aip_uuid}"
+      puts description.inspect
       @hydra.create(@dip.metadata["content_model"], description, @dip.aip_uuid)
     end
   end
