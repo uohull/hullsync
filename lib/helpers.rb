@@ -10,7 +10,7 @@ references relation replaces requires rights rightsHolder source spatial subject
 
 MULTI_FIELDS = %w(creator visibleFiles)
 
-OTHER_TERMS = %w(filename citation visibleFiles)
+OTHER_TERMS = %w(filename citation visibleFiles contentModel)
 
 def copy_folder(source, destination)
   return false unless File.directory?(source)

@@ -92,13 +92,18 @@ class DIPReader
 
   def find_file_references(content_filename)
     puts "Finding file references for #{content_filename}"
-    div = @content_struct.at_xpath("mets:div[@LABEL='#{content_filename}']")
+    if content_filename == 'all' # get all content files
+      div = @content_struct
+    else
+      div = @content_struct.at_xpath("mets:div[@LABEL='#{content_filename}']")
+    end
+
     if div.nil?
       puts "No file references found"
       []
     else
       if div.at_xpath("@TYPE").value == "Directory"
-        div.xpath("mets:div").map do |item|
+        div.xpath("mets:div").select{|item| item.attribute("LABEL").value !~ /^DESCRIPTION.(TXT|txt|CSV|csv)$/}.map do |item|
           build_file_reference(item.attribute("LABEL").value, item.at_xpath("mets:fptr/@FILEID"))
         end
       else
