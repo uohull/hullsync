@@ -52,7 +52,8 @@ class PreProcessorJob
     rescue =>e
       puts "ERROR processing #{folder_id}, #{original_filename}"
       puts e
-
+      puts e.backtrace
+      
     end
 
   end
